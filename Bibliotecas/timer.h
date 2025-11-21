@@ -2,6 +2,7 @@
 #define TIMER_H
 
 
+
 void timerInit(int valueMilliSec);
 
 
@@ -17,5 +18,8 @@ int timerTimeOver();
 
 
 void timerPrint();
+
+void timerWait(int ms);
+
 
 #endif

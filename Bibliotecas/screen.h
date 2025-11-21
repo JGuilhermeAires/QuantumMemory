@@ -53,29 +53,23 @@ WHITE
 
 } screenColor;
 
-// =========================
-//   FUNÇÕES
-// =========================
 
-// Inicializa a tela (limpa e pode desenhar borda)
+
+
 void screenInit(int drawBorders);
 
-// Restaura terminal e mostra cursor novamente
+
 void screenDestroy();
 
-// Move cursor sem quebrar a tela
+
 void screenGotoxy(int x, int y);
 
-// Define cor de texto e fundo
+
 void screenSetColor(screenColor fg, screenColor bg);
 
-// Desenha bordas completas
+
 void screenDrawBorders();
 
-// -------------------------
-// Funções auxiliares que seu .c usa internamente
-// (Devem existir em outro .c)
-// -------------------------
 
 void screenClear();
 void screenHomeCursor();
@@ -84,5 +78,7 @@ void screenShowCursor();
 void screenBoxEnable();
 void screenBoxDisable();
 void screenSetNormal();
+void screenUpdate();
+
 
 #endif
