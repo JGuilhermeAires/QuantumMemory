@@ -105,13 +105,16 @@ void animacaoShuffle() {
 // ===================================================
 void quantumShuffle() {
     animacaoShuffle();
-    int a = rand()%MAXCARTAS;
-    int b = rand()%MAXCARTAS;
-    if (cartas[a].estado!=2 && cartas[b].estado!=2) {
-        Carta temp = cartas[a];
-        cartas[a] = cartas[b];
-        cartas[b] = temp;
-    }
+
+    int a, b;
+
+    // Escolhe duas posições diferentes com cartas fechadas
+    do { a = rand() % MAXCARTAS; } while (cartas[a].estado != 0);
+    do { b = rand() % MAXCARTAS; } while (cartas[b].estado != 0 || b == a);
+
+    Carta temp = cartas[a];
+    cartas[a] = cartas[b];
+    cartas[b] = temp;
 }
 
 // ===================================================
