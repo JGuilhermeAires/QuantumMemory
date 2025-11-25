@@ -7,9 +7,6 @@
 #include "Bibliotecas/keyboard.h"
 #include "Bibliotecas/timer.h"
 
-// ===================================================
-// CONFIGURAÇÕES
-// ===================================================
 #define MAXCARTAS 16
 #define MAXNOME   50
 
@@ -19,15 +16,11 @@ Dificuldade dificuldadeSelecionada = NORMAL;
 int tempoShuffle = 600;      
 int tempoAnimacao = 100;     
 
-// ===================================================
-// ESTRUTURAS
-// ===================================================
+
 typedef struct { int id; int estado; } Carta;
 typedef struct { char nome[MAXNOME]; int score; } Registro;
 
-// ===================================================
-// VARIÁVEIS GLOBAIS
-// ===================================================
+
 Carta cartas[MAXCARTAS];
 Registro rankingList[200];
 char playerName[MAXNOME];
@@ -39,15 +32,11 @@ int segunda = -1;
 int score = 0;
 int paresRestantes = MAXCARTAS / 2;
 
-// ===================================================
-// SOMS
-// ===================================================
+
 void beepOk()   { printf("\a"); fflush(stdout); }
 void beepErro() { printf("\a\a"); fflush(stdout); }
 
-// ===================================================
-// RANKING
-// ===================================================
+
 void salvarRanking() {
     FILE* f = fopen("ranking.dat", "a");
     if (!f) return;
@@ -81,9 +70,7 @@ int posicaoJogador() {
     return -1;
 }
 
-// ===================================================
-// ANIMAÇÃO
-// ===================================================
+
 void animacaoShuffle() {
     for(int i=0; i<3; i++) {
         screenGotoxy(2,24);
@@ -100,15 +87,13 @@ void animacaoShuffle() {
     }
 }
 
-// ===================================================
-// EMBARALHAR
-// ===================================================
+
 void quantumShuffle() {
     animacaoShuffle();
 
     int a, b;
 
-    // Escolhe duas posições diferentes com cartas fechadas
+   
     do { a = rand() % MAXCARTAS; } while (cartas[a].estado != 0);
     do { b = rand() % MAXCARTAS; } while (cartas[b].estado != 0 || b == a);
 
@@ -117,9 +102,7 @@ void quantumShuffle() {
     cartas[b] = temp;
 }
 
-// ===================================================
-// INICIALIZA CARTAS
-// ===================================================
+
 void initCartas() {
     int ids[MAXCARTAS];
     for(int i=0;i<MAXCARTAS;i++) ids[i] = i/2;
@@ -133,9 +116,7 @@ void initCartas() {
     paresRestantes = MAXCARTAS/2;
 }
 
-// ===================================================
-// DESENHAR TABULEIRO
-// ===================================================
+
 void drawBoard() {
     screenClear();
     screenSetColor(CYAN, BLACK);
@@ -159,9 +140,7 @@ void drawBoard() {
     screenUpdate();
 }
 
-// ===================================================
-// ABRIR CARTA
-// ===================================================
+
 void abrirCarta(int i) {
     if(cartas[i].estado!=0) return;
 
@@ -186,9 +165,7 @@ void abrirCarta(int i) {
     primeira=segunda=-1;
 }
 
-// ===================================================
-// PEDIR NOME
-// ===================================================
+
 void pedirNome() {
     screenClear();
     screenGotoxy(10,10);
@@ -202,9 +179,7 @@ void pedirNome() {
         playerName[len-1] = '\0';
 }
 
-// ===================================================
-// MOSTRAR RANKING
-// ===================================================
+
 void mostrarRanking() {
     carregarRanking();
     ordenarRanking();
@@ -228,9 +203,7 @@ void mostrarRanking() {
     getchar(); getchar(); // pausa para o jogador
 }
 
-// ===================================================
-// MENU DE DIFICULDADE
-// ===================================================
+
 void menuDificuldade() {
     screenClear();
     screenSetColor(WHITE, BLACK);
@@ -248,16 +221,13 @@ void menuDificuldade() {
     while ((c = getchar()) != '\n' && c != EOF);
 
     switch(op){
-        case 1: dificuldadeSelecionada=FACIL; tempoShuffle=1000; break;
-        case 2: dificuldadeSelecionada=NORMAL; tempoShuffle=600; break;
-        case 3: dificuldadeSelecionada=DIFICIL; tempoShuffle=300; break;
+        case 1: dificuldadeSelecionada=FACIL; tempoShuffle=25000; break;  // Fácil: 1 segundo
+        case 2: dificuldadeSelecionada=NORMAL; tempoShuffle=15000; break; // Normal: 1.5 segundos
+        case 3: dificuldadeSelecionada=DIFICIL; tempoShuffle=1000; break; // Difícil: 2 segundos
         default: dificuldadeSelecionada=NORMAL; break;
     }
 }
 
-// ===================================================
-// LOOP DO JOGO
-// ===================================================
 void jogar() {
     initCartas();
     drawBoard();
@@ -288,9 +258,7 @@ void jogar() {
     timerDestroy();
 }
 
-// ===================================================
-// MENU PRINCIPAL
-// ===================================================
+
 int menu() {
     screenClear();
     screenGotoxy(10,10);
@@ -310,9 +278,7 @@ int menu() {
     return op;
 }
 
-// ===================================================
-// MAIN
-// ===================================================
+
 int main() {
     srand(time(NULL));
     screenInit(1);
