@@ -1,8 +1,13 @@
+/**
+ * timer.c
+ * Created on Aug, 23th 2023
+ * Author: Tiago Barros
+ * Based on "From C to C++ course - 2002"
+*/
 
 #include "timer.h"
 #include <sys/time.h>
 #include <stdio.h>
-#include <unistd.h>
 
 static struct timeval timer, now;
 static int delay = -1;
@@ -47,8 +52,4 @@ int timerTimeOver()
 void timerPrint()
 {
     printf("Timer:  %d", getTimeDiff());
-}
-void timerWait(int ms)
-{
-    usleep(ms * 1000); 
 }
