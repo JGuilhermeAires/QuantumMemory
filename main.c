@@ -16,10 +16,15 @@ Dificuldade dificuldadeSelecionada = NORMAL;
 int tempoShuffle = 600;      
 int tempoAnimacao = 100;     
 
+typedef struct { 
+    int id; 
+    int estado; 
+} Carta;
 
-typedef struct { int id; int estado; } Carta;
-typedef struct { char nome[MAXNOME]; int score; } Registro;
-
+typedef struct { 
+    char nome[MAXNOME]; 
+    int score; 
+} Registro;
 
 Carta cartas[MAXCARTAS];
 Registro rankingList[200];
@@ -32,10 +37,8 @@ int segunda = -1;
 int score = 0;
 int paresRestantes = MAXCARTAS / 2;
 
-
 void beepOk()   { printf("\a"); fflush(stdout); }
 void beepErro() { printf("\a\a"); fflush(stdout); }
-
 
 void salvarRanking() {
     FILE* f = fopen("ranking.dat", "a");
@@ -48,38 +51,43 @@ void carregarRanking() {
     totalReg = 0;
     FILE* f = fopen("ranking.dat", "r");
     if (!f) return;
-    while (fscanf(f, "%s %d", rankingList[totalReg].nome, &rankingList[totalReg].score) != EOF)
+    while (fscanf(f, "%49s %d", rankingList[totalReg].nome, &rankingList[totalReg].score) != EOF) {
         totalReg++;
+        if (totalReg >= 200) break;
+    }
     fclose(f);
 }
 
 void ordenarRanking() {
-    for (int i = 0; i < totalReg; i++)
-        for (int j = i+1; j < totalReg; j++)
+    for (int i = 0; i < totalReg - 1; i++) {
+        for (int j = i + 1; j < totalReg; j++) {
             if (rankingList[j].score > rankingList[i].score) {
                 Registro temp = rankingList[i];
                 rankingList[i] = rankingList[j];
                 rankingList[j] = temp;
             }
+        }
+    }
 }
 
 int posicaoJogador() {
-    for (int i = 0; i < totalReg; i++)
-        if (strcmp(rankingList[i].nome, playerName)==0 && rankingList[i].score==score)
-            return i+1;
+    for (int i = 0; i < totalReg; i++) {
+        if (strcmp(rankingList[i].nome, playerName) == 0 && rankingList[i].score == score) {
+            return i + 1;
+        }
+    }
     return -1;
 }
 
-
 void animacaoShuffle() {
-    for(int i=0; i<3; i++) {
-        screenGotoxy(2,24);
+    for(int i = 0; i < 3; i++) {
+        screenGotoxy(2, 24);
         screenSetColor(RED, BLACK);
         printf("*** COLAPSO QUANTICO ***");
         screenUpdate();
         timerWait(tempoAnimacao);
 
-        screenGotoxy(2,24);
+        screenGotoxy(2, 24);
         screenSetColor(BLACK, BLACK);
         printf("                       ");
         screenUpdate();
@@ -87,211 +95,299 @@ void animacaoShuffle() {
     }
 }
 
-
 void quantumShuffle() {
     animacaoShuffle();
 
     int a, b;
-
-   
-    do { a = rand() % MAXCARTAS; } while (cartas[a].estado != 0);
-    do { b = rand() % MAXCARTAS; } while (cartas[b].estado != 0 || b == a);
-
+    int tentativas = 0;
+    
+    do { 
+        a = rand() % MAXCARTAS; 
+        tentativas++;
+    } while (cartas[a].estado != 0 && tentativas < 100);
+    
+    if (tentativas >= 100) return;
+    
+    tentativas = 0;
+    do { 
+        b = rand() % MAXCARTAS; 
+        tentativas++;
+    } while ((cartas[b].estado != 0 || b == a) && tentativas < 100);
+    
+    if (tentativas >= 100) return;
+    
     Carta temp = cartas[a];
     cartas[a] = cartas[b];
     cartas[b] = temp;
 }
 
-
 void initCartas() {
     int ids[MAXCARTAS];
-    for(int i=0;i<MAXCARTAS;i++) ids[i] = i/2;
-    for(int i=0;i<MAXCARTAS;i++) {
-        int r = rand()%MAXCARTAS;
-        int t = ids[i]; ids[i]=ids[r]; ids[r]=t;
+    for(int i = 0; i < MAXCARTAS; i++) {
+        ids[i] = i / 2;
     }
-    for(int i=0;i<MAXCARTAS;i++) { cartas[i].id=ids[i]; cartas[i].estado=0; }
-    primeira = segunda = -1;
+    
+    for(int i = 0; i < MAXCARTAS; i++) {
+        int r = rand() % MAXCARTAS;
+        int t = ids[i];
+        ids[i] = ids[r];
+        ids[r] = t;
+    }
+    
+    for(int i = 0; i < MAXCARTAS; i++) {
+        cartas[i].id = ids[i];
+        cartas[i].estado = 0;
+    }
+    
+    primeira = -1;
+    segunda = -1;
     score = 0;
-    paresRestantes = MAXCARTAS/2;
+    paresRestantes = MAXCARTAS / 2;
+    selecionada = 0;
 }
-
 
 void drawBoard() {
     screenClear();
     screenSetColor(CYAN, BLACK);
-    screenGotoxy(2,1);
+    screenGotoxy(2, 1);
     printf("QuantumMemory - Jogador: %s | Pontos: %d | Restantes: %d",
            playerName, score, paresRestantes);
 
-    int x=6,y=4;
-    for(int i=0;i<MAXCARTAS;i++) {
-        screenGotoxy(x,y);
-        if(i==selecionada) screenSetColor(YELLOW, BLUE);
-        else screenSetColor(WHITE, BLACK);
+    int x = 6, y = 4;
+    for(int i = 0; i < MAXCARTAS; i++) {
+        screenGotoxy(x, y);
+        
+        if(i == selecionada) {
+            screenSetColor(YELLOW, BLUE);
+        } else {
+            screenSetColor(WHITE, BLACK);
+        }
 
-        if(cartas[i].estado==2) printf("[★]");
-        else if(cartas[i].estado==1) printf(" %d ", cartas[i].id);
-        else printf("[■]");
+        if(cartas[i].estado == 2) {
+            printf("[★]");
+        } else if(cartas[i].estado == 1) {
+            printf(" %d ", cartas[i].id);
+        } else {
+            printf("[■]");
+        }
 
-        x+=6;
-        if((i+1)%4==0){ y+=2; x=6; }
+        x += 6;
+        if((i + 1) % 4 == 0) { 
+            y += 2; 
+            x = 6; 
+        }
     }
     screenUpdate();
 }
 
-
 void abrirCarta(int i) {
-    if(cartas[i].estado!=0) return;
+    if(cartas[i].estado != 0) return;
 
-    cartas[i].estado=1;
+    cartas[i].estado = 1;
     drawBoard();
     timerWait(120);
 
-    if(primeira==-1){ primeira=i; return; }
+    if(primeira == -1) {
+        primeira = i;
+        return;
+    }
 
-    segunda=i;
-    if(cartas[primeira].id==cartas[segunda].id) {
-        cartas[primeira].estado=2;
-        cartas[segunda].estado=2;
+    segunda = i;
+    
+    if(cartas[primeira].id == cartas[segunda].id) {
+        cartas[primeira].estado = 2;
+        cartas[segunda].estado = 2;
         beepOk();
         score++;
         paresRestantes--;
     } else {
         beepErro();
-        cartas[primeira].estado=0;
-        cartas[segunda].estado=0;
+        cartas[primeira].estado = 0;
+        cartas[segunda].estado = 0;
     }
-    primeira=segunda=-1;
+    
+    primeira = -1;
+    segunda = -1;
+    drawBoard();
 }
-
 
 void pedirNome() {
     screenClear();
-    screenGotoxy(10,10);
+    screenGotoxy(10, 10);
     printf("Digite seu nome: ");
     screenUpdate();
 
-    fgets(playerName, MAXNOME, stdin);
-    // Remove newline character
-    size_t len = strlen(playerName);
-    if (len > 0 && playerName[len-1] == '\n')
-        playerName[len-1] = '\0';
+    if (fgets(playerName, MAXNOME, stdin) != NULL) {
+        size_t len = strlen(playerName);
+        if (len > 0 && playerName[len - 1] == '\n') {
+            playerName[len - 1] = '\0';
+        }
+    } else {
+        strcpy(playerName, "Jogador");
+    }
 }
-
 
 void mostrarRanking() {
     carregarRanking();
     ordenarRanking();
 
     screenClear();
-    screenGotoxy(5,2);
+    screenGotoxy(5, 2);
     screenSetColor(YELLOW, BLACK);
     printf("RANKING GERAL");
 
-    for(int i=0;i<totalReg && i<20;i++) {
-        screenGotoxy(5,4+i);
-        printf("%d - %-20s %d", i+1, rankingList[i].nome, rankingList[i].score);
+    for(int i = 0; i < totalReg && i < 20; i++) {
+        screenGotoxy(5, 4 + i);
+        printf("%d - %-20s %d", i + 1, rankingList[i].nome, rankingList[i].score);
     }
 
     int pos = posicaoJogador();
-    screenGotoxy(5,27);
-    if(pos>0) printf("Voce ficou na posicao %d!", pos);
-    else printf("Posicao nao identificada.");
+    screenGotoxy(5, 27);
+    if(pos > 0) {
+        printf("Voce ficou na posicao %d!", pos);
+    } else {
+        printf("Posicao nao identificada.");
+    }
 
     screenUpdate();
-    getchar(); getchar(); // pausa para o jogador
+    printf("\nPressione ENTER para continuar...");
+    getchar();
 }
-
 
 void menuDificuldade() {
     screenClear();
     screenSetColor(WHITE, BLACK);
-    screenGotoxy(10,9);
+    screenGotoxy(10, 9);
     printf("Selecione a dificuldade:");
-    screenGotoxy(10,11); printf("1 - Facil");
-    screenGotoxy(10,12); printf("2 - Normal");
-    screenGotoxy(10,13); printf("3 - Dificil");
+    screenGotoxy(10, 11); printf("1 - Facil");
+    screenGotoxy(10, 12); printf("2 - Normal");
+    screenGotoxy(10, 13); printf("3 - Dificil");
     screenUpdate();
 
     int op;
-    scanf("%d",&op);
-    // Limpa o buffer após scanf
+    if (scanf("%d", &op) != 1) {
+        op = 2;
+    }
+    
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 
-    switch(op){
-        case 1: dificuldadeSelecionada=FACIL; tempoShuffle=25000; break;  // Fácil: 1 segundo
-        case 2: dificuldadeSelecionada=NORMAL; tempoShuffle=15000; break; // Normal: 1.5 segundos
-        case 3: dificuldadeSelecionada=DIFICIL; tempoShuffle=1000; break; // Difícil: 2 segundos
-        default: dificuldadeSelecionada=NORMAL; break;
+    switch(op) {
+        case 1: 
+            dificuldadeSelecionada = FACIL; 
+            tempoShuffle = 2500;
+            break;
+        case 2: 
+            dificuldadeSelecionada = NORMAL; 
+            tempoShuffle = 1500;
+            break;
+        case 3: 
+            dificuldadeSelecionada = DIFICIL; 
+            tempoShuffle = 1000;
+            break;
+        default: 
+            dificuldadeSelecionada = NORMAL; 
+            tempoShuffle = 1500;
+            break;
     }
 }
 
 void jogar() {
     initCartas();
     drawBoard();
+    
     timerInit(tempoShuffle);
 
-    while(paresRestantes>0) {
+    while(paresRestantes > 0) {
         if(timerTimeOver()) {
             quantumShuffle();
             drawBoard();
+            timerInit(tempoShuffle);
         }
 
         if(keyhit()) {
             int c = readch();
-            if(c==27) break;
+            if(c == 27) break;
 
-            if(c=='w'||c=='W'){ if(selecionada>=4) selecionada-=4; }
-            if(c=='s'||c=='S'){ if(selecionada<12) selecionada+=4; }
-            if(c=='a'||c=='A'){ if(selecionada%4!=0) selecionada--; }
-            if(c=='d'||c=='D'){ if(selecionada%4!=3) selecionada++; }
+            if(c == 'w' || c == 'W') { 
+                if(selecionada >= 4) selecionada -= 4; 
+            }
+            if(c == 's' || c == 'S') { 
+                if(selecionada < 12) selecionada += 4; 
+            }
+            if(c == 'a' || c == 'A') { 
+                if(selecionada % 4 != 0) selecionada--; 
+            }
+            if(c == 'd' || c == 'D') { 
+                if(selecionada % 4 != 3) selecionada++; 
+            }
 
-            if(c==10||c==13) abrirCarta(selecionada);
+            if(c == 10 || c == 13) {
+                abrirCarta(selecionada);
+            }
 
             drawBoard();
         }
     }
 
+    if (paresRestantes == 0) {
+        screenGotoxy(10, 20);
+        screenSetColor(GREEN, BLACK);
+        printf("PARABENS! Voce completou o jogo!");
+        screenUpdate();
+        timerWait(2000);
+    }
+    
     salvarRanking();
     timerDestroy();
 }
 
-
 int menu() {
     screenClear();
-    screenGotoxy(10,10);
+    screenGotoxy(10, 10);
     screenSetColor(WHITE, BLACK);
     printf("QUANTUM MEMORY");
-    screenGotoxy(10,12); printf("1 - Jogar");
-    screenGotoxy(10,13); printf("2 - Ranking");
-    screenGotoxy(10,14); printf("3 - Dificuldade");
-    screenGotoxy(10,15); printf("4 - Sair");
+    screenGotoxy(10, 12); printf("1 - Jogar");
+    screenGotoxy(10, 13); printf("2 - Ranking");
+    screenGotoxy(10, 14); printf("3 - Dificuldade");
+    screenGotoxy(10, 15); printf("4 - Sair");
+    screenGotoxy(10, 17); printf("Selecione: ");
     screenUpdate();
 
     int op;
-    scanf("%d",&op);
-    // Limpa o buffer após scanf
+    if (scanf("%d", &op) != 1) {
+        op = 4; 
+    }
+    
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
+    
     return op;
 }
 
-
 int main() {
     srand(time(NULL));
+    
     screenInit(1);
     keyboardInit();
 
-    int op=0;
-    while(op!=4){
-        op=menu();
-        switch(op){
-            case 1: pedirNome(); jogar(); mostrarRanking(); break;
-            case 2: mostrarRanking(); break;
-            case 3: menuDificuldade(); break;
-            default: break;
+    int op = 0;
+    while(op != 4) {
+        op = menu();
+        switch(op) {
+            case 1: 
+                pedirNome(); 
+                jogar(); 
+                mostrarRanking(); 
+                break;
+            case 2: 
+                mostrarRanking(); 
+                break;
+            case 3: 
+                menuDificuldade(); 
+                break;
+            default: 
+                break;
         }
     }
 
@@ -299,4 +395,3 @@ int main() {
     screenDestroy();
     return 0;
 }
-    
